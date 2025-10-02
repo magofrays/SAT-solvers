@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<testsuite name="by.magofrays.ParserTest" tests="2" skipped="0" failures="0" errors="0" timestamp="2025-10-02T18:24:14" hostname="magofrays-G5-KC" time="0.019">
-  <properties/>
-  <testcase name="parseAndCheckSimpleFormulaEvaluation()" classname="by.magofrays.ParserTest" time="0.012"/>
-  <testcase name="parseImportCNFFile()" classname="by.magofrays.ParserTest" time="0.006"/>
-  <system-out><![CDATA[]]></system-out>
-  <system-err><![CDATA[]]></system-err>
-</testsuite>
