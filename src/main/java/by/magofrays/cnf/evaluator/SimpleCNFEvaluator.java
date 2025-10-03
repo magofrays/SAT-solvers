@@ -1,17 +1,18 @@
 package by.magofrays.cnf.evaluator;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 
 import java.util.List;
 
 @Getter
-@Builder
+@AllArgsConstructor
 public class SimpleCNFEvaluator implements CNFEvaluator{
 
     private Integer numVariables;
     private Integer numClauses;
-    private List<Integer[]> clauses;
+    private List<List<Integer>> clauses;
 
     @Override
     public Boolean evaluate(Boolean... args) {

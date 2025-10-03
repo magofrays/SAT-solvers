@@ -17,7 +17,7 @@ public class SimpleCNFParser implements CNFParser<SimpleCNFEvaluator>{
         String line;
         Integer numVariables = null;
         Integer numClauses = null;
-        List<Integer[]> clauses = new ArrayList<>();
+        List<List<Integer>> clauses = new ArrayList<>();
         List<Integer> currentClause = new ArrayList<>();
 
         while ((line = reader.readLine()) != null) {
@@ -44,7 +44,7 @@ public class SimpleCNFParser implements CNFParser<SimpleCNFEvaluator>{
                 if (literal == 0) {
                     // End of current clause
                     if (!currentClause.isEmpty()) {
-                        clauses.add(currentClause.toArray(new Integer[0]));
+                        clauses.add(currentClause);
                         currentClause = new ArrayList<>();
                     }
                 } else {
@@ -55,7 +55,7 @@ public class SimpleCNFParser implements CNFParser<SimpleCNFEvaluator>{
 
         // Handle last clause without terminating 0
         if (!currentClause.isEmpty()) {
-            clauses.add(currentClause.toArray(new Integer[0]));
+            clauses.add(currentClause);
         }
 
         // Validate
