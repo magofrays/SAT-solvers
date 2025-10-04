@@ -3,10 +3,14 @@ package by.magofrays.cnf.evaluator;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.ToString;
 
 import java.util.List;
+import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 @Getter
+@Builder
 @AllArgsConstructor
 public class SimpleCNFEvaluator implements CNFEvaluator{
 
@@ -30,5 +34,20 @@ public class SimpleCNFEvaluator implements CNFEvaluator{
                 return false;
         }
         return true;
+    }
+
+    @Override
+    public SimpleCNFEvaluator clone() {
+        return SimpleCNFEvaluator.builder()
+                .numVariables(numVariables)
+                .numClauses(numClauses)
+                .clauses(clauses.stream()
+                        .map(ArrayList::new)
+                        .collect(Collectors.toList()
+                        ))
+                .build();
+    }
+    public String toString(){
+        return "{%d, ".formatted(clauses.size()) + clauses.toString() + "}";
     }
 }
