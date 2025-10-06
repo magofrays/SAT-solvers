@@ -30,8 +30,8 @@ public class DPLLSATSolver implements SATSolver<SimpleCNFEvaluator, DPLLSplittin
                     break;
                 }
 
-                boolean singularDisjunction = singularDisjunction(splitting);
-                boolean pureLiterals =  removePureLiterals(splitting);
+                boolean singularDisjunction = unitPropagation(splitting);
+                boolean pureLiterals =  pureLiteralElimination(splitting);
                 simplified = singularDisjunction || pureLiterals;
             } while (simplified);
 
@@ -51,14 +51,14 @@ public class DPLLSATSolver implements SATSolver<SimpleCNFEvaluator, DPLLSplittin
         return new DPLLSplitting(false);
     }
 
-    private boolean hasEmptyClause(DPLLSplitting splitting) {
-        for (List<Integer> clause : splitting.getEvaluator().getClauses()) {
-            if (clause.isEmpty()) {
-                return true;
-            }
+private boolean hasEmptyClause(DPLLSplitting splitting) {
+    for (List<Integer> clause : splitting.getEvaluator().getClauses()) {
+        if (clause.isEmpty()) {
+            return true;
         }
-        return false;
     }
+    return false;
+}
 
     public Integer findMostFrequentVariable(DPLLSplitting splitting){
         int[] variablesCount = IntStream.generate(() -> 0)
@@ -78,45 +78,42 @@ public class DPLLSATSolver implements SATSolver<SimpleCNFEvaluator, DPLLSplittin
         return maxIndex+1;
     }
 
-    public boolean removePureLiterals(DPLLSplitting splitting) {
-        var freeVarsCopy = new ArrayList<>(splitting.getFreeVariables());
+    public boolean pureLiteralElimination(DPLLSplitting splitting) {
+        Map<Integer, Boolean> variableSigns = new HashMap<>();
+        Set<Integer> impureVariables = new HashSet<>();
         boolean pureLiteralExists = false;
 
-        for (Integer freeVar : freeVarsCopy) {
-            if (!splitting.getFreeVariables().contains(freeVar)) continue;
+        for (var clause : splitting.getEvaluator().getClauses()) {
+            for (Integer variableIndex : clause) {
+                int variable = Math.abs(variableIndex);
+                boolean currentSign = (variableIndex > 0);
 
-            Boolean expectedSign = null;
-            boolean isPure = true;
+                if (impureVariables.contains(variable)) continue;
 
-            for (var clause : splitting.getEvaluator().getClauses()) {
-                for (Integer variableIndex : clause) {
-                    if (Math.abs(variableIndex) == freeVar) {
-                        boolean currentSign = (variableIndex > 0);
-                        if (expectedSign == null) {
-                            expectedSign = currentSign;
-                        } else if (expectedSign != currentSign) {
-                            isPure = false;
-                            break;
-                        }
-                    }
+                if (!variableSigns.containsKey(variable)) {
+                    variableSigns.put(variable, currentSign);
                 }
-                if (!isPure) break;
+                else if (variableSigns.get(variable) != currentSign) {
+                    impureVariables.add(variable);
+                    variableSigns.remove(variable);
+                }
             }
+        }
 
-            if (isPure && expectedSign != null) {
-                pureLiteralExists = true;
-                if (expectedSign) {
-                    splitting.addPositive(freeVar);
-                } else {
-                    splitting.addNegative(-freeVar);
-                }
-                // Не выходим, продолжаем искать другие чистые литералы
+        for (Map.Entry<Integer, Boolean> entry : variableSigns.entrySet()) {
+            Integer freeVar = entry.getKey();
+            Boolean expectedSign = entry.getValue();
+            pureLiteralExists = true;
+            if (expectedSign) {
+                splitting.addPositive(freeVar);
+            } else {
+                splitting.addNegative(-freeVar);
             }
         }
         return pureLiteralExists;
     }
 
-    public boolean singularDisjunction(DPLLSplitting splitting){
+    public boolean unitPropagation(DPLLSplitting splitting){
         var clauses = splitting.getEvaluator().getClauses();
         boolean singularDisjunctionExists = false;
 

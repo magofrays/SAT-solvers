@@ -8,6 +8,8 @@ import by.magofrays.cnf.parser.SimpleCNFParser;
 import org.junit.jupiter.api.Test;
 
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 public class ParserTest {
     @Test
@@ -23,8 +25,8 @@ public class ParserTest {
 
         SimpleCNFEvaluator evaluator = parser.parse(inputStream);
 
-        Boolean result1 = evaluator.evaluate(true, false, true);
-        Boolean result2 = evaluator.evaluate(false, false, false);
+        Boolean result1 = evaluator.evaluate(List.of(true, false, true));
+        Boolean result2 = evaluator.evaluate(List.of(false, false, false));
         assertTrue(result1);
         assertFalse(result2);
     }

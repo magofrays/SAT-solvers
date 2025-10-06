@@ -19,14 +19,14 @@ public class SimpleCNFEvaluator implements CNFEvaluator{
     private List<List<Integer>> clauses;
 
     @Override
-    public Boolean evaluate(Boolean... args) {
+    public Boolean evaluate(List<Boolean> args) {
         for(var clause : clauses){
             Boolean clauseRes = false;
             for(Integer variableIndex : clause){
                 if(variableIndex > 0)
-                    clauseRes = (args[variableIndex-1] || clauseRes);
+                    clauseRes = (args.get(variableIndex-1) || clauseRes);
                 else
-                    clauseRes = (!args[-(variableIndex+1)] || clauseRes);
+                    clauseRes = (!args.get(-(variableIndex+1)) || clauseRes);
                 if(clauseRes)
                     break;
             }

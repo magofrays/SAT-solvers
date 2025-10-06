@@ -5,7 +5,9 @@ import by.magofrays.cnf.evaluator.SimpleCNFEvaluator;
 import lombok.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
@@ -40,16 +42,16 @@ public class DPLLSplitting implements SATResult {
 
     public void addPositive(Integer index){
         positiveVariables.add(index);
-        removeIndexOrLiteral(index);
+        removeLiteralOrClause(index);
         freeVariables.remove(index);
     }
     public void addNegative(Integer index){
         negativeVariables.add(index);
-        removeIndexOrLiteral(index);
+        removeLiteralOrClause(index);
         freeVariables.remove((Integer)(-index));
     }
 
-    public void removeIndexOrLiteral(Integer index){
+    public void removeLiteralOrClause(Integer index){
         var clausesIterator = evaluator.getClauses().iterator();
         while(clausesIterator.hasNext()){
             var clauseIterator = clausesIterator.next().iterator();
@@ -70,40 +72,43 @@ public class DPLLSplitting implements SATResult {
     public DPLLSplitting clone() {
         return DPLLSplitting.builder()
                 .evaluator(evaluator.clone())
-                .positiveVariables(new ArrayList<>(positiveVariables)) // Копируем существующие
-                .negativeVariables(new ArrayList<>(negativeVariables)) // Копируем существующие
-                .freeVariables(new ArrayList<>(freeVariables))         // Копируем существующие
-                .result(result)                                        // Копируем результат
+                .positiveVariables(new ArrayList<>(positiveVariables))
+                .negativeVariables(new ArrayList<>(negativeVariables))
+                .freeVariables(new ArrayList<>(freeVariables))
+                .result(result)
                 .build();
     }
 
+
     @Override
-    public List<List<Integer>> getAllAssignments() {
-        if(positiveVariables == null){
+    public List<List<Boolean>> getAllAssignments() {
+        if (positiveVariables == null) {
             return null;
         }
-        List<List<Integer>> allAssignments = new ArrayList<>();
+
+        List<List<Boolean>> allAssignments = new ArrayList<>();
         int totalVariables = positiveVariables.size() + negativeVariables.size() + freeVariables.size();
         int n = freeVariables.size();
         int totalCombinations = (int) Math.pow(2, n);
 
+        Map<Integer, Boolean> fixedValues = new HashMap<>();
+        for (Integer var : positiveVariables) {
+            fixedValues.put(var, true);
+        }
+        for (Integer var : negativeVariables) {
+            fixedValues.put(var, false);
+        }
+
         for (int i = 0; i < totalCombinations; i++) {
-            List<Integer> assignment = new ArrayList<>();
-
-            // Добавляем зафиксированные положительные переменные как 1
-            for (Integer fixedPos : positiveVariables) {
-                assignment.add(1);
-            }
-
-            // Добавляем зафиксированные отрицательные переменные как 0
-            for (Integer fixedNeg : negativeVariables) {
-                assignment.add(0);
-            }
-
-            // Добавляем комбинации для свободных переменных
-            for (int j = 0; j < n; j++) {
-                boolean bitIsSet = ((i >> j) & 1) == 1;
-                assignment.add(bitIsSet ? 1 : 0);
+            List<Boolean> assignment = new ArrayList<>();
+            for (int var = 1; var <= totalVariables; var++) {
+                if (fixedValues.containsKey(var)) {
+                    assignment.add(fixedValues.get(var));
+                } else {
+                    int freeVarIndex = freeVariables.indexOf(var);
+                    boolean bitIsSet = ((i >> freeVarIndex) & 1) == 1;
+                    assignment.add(bitIsSet);
+                }
             }
 
             allAssignments.add(assignment);

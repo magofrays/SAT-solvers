@@ -15,17 +15,21 @@ public class Main {
     public static void main(String[] args) {
         CNFParser parser = new SimpleCNFParser();
         InputStream inputStream = Main.class.getClassLoader()
-                .getResourceAsStream("uf150-01.cnf");
+                .getResourceAsStream("uf75-03.cnf");
         CNFEvaluator cnf = parser.parse(inputStream);
 
         System.out.println(cnf);
         SATSolver satSolver = new DPLLSATSolver();
         Instant start = Instant.now();
-        SATResult result = satSolver.solve(cnf);
+        SATResult result = satSolver.solve(cnf.clone());
         Instant end = Instant.now();
         double seconds = Duration.between(start, end).toNanos() / 1_000_000_000.0;
         System.out.printf("Время: %.10f секунд%n", seconds);
-        System.out.println(result.getAllAssignments());
-        System.out.println(result);
+        var results = result.getAllAssignments();
+        for(var res : results){
+            System.out.println("Результат: " + res);
+            System.out.println("Значение функции при подстановке: " + cnf.evaluate(res));
+        }
     }
 }
+
